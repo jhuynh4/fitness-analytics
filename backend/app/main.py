@@ -8,6 +8,7 @@ from .api.me import router as me_router
 from .api.runs import router as runs_router
 from .api.nutrition import router as nutrition_router
 from .api.weight import router as weight_router
+from .api.analytics import router as analytics_router
 
 app = FastAPI(title="Fitness Analytics API")
 
@@ -21,6 +22,7 @@ app.include_router(me_router)
 app.include_router(runs_router)
 app.include_router(nutrition_router)
 app.include_router(weight_router)
+app.include_router(analytics_router)
 
 @app.get("/health")
 def health_check():
