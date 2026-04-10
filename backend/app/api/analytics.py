@@ -103,3 +103,57 @@ def get_summary(
         "latest_weight": round(latest_weight, 2) if latest_weight else None,
         "avg_weight_7d": round(avg_weight_7d, 2) if avg_weight_7d else 0,
     }
+
+@router.get("/trends")
+def get_trends(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_id = current_user.id
+
+    run_rows = (
+        db.query(Run.run_date, func.sum(Run.distance_miles))
+        .filter(Run.user_id == user_id)
+        .group_by(Run.run_date)
+        .order_by(Run.run_date.asc())
+        .all()
+    )
+
+    nutrition_rows = (
+        db.query(NutritionLog.log_date, NutritionLog.calories, NutritionLog.protein_g)
+        .filter(NutritionLog.user_id == user_id)
+        .order_by(NutritionLog.log_date.asc())
+        .all()
+    )
+
+    weight_rows = (
+        db.query(WeightLog.log_date, WeightLog.weight_lbs)
+        .filter(WeightLog.user_id == user_id)
+        .order_by(WeightLog.log_date.asc())
+        .all()
+    )
+
+    return {
+        "run_miles_by_date": [
+            {
+                "date": run_date.isoformat(),
+                "miles": round(miles, 2) if miles else 0,
+            }
+            for run_date, miles in run_rows
+        ],
+        "nutrition_by_date": [
+            {
+                "date": log_date.isoformat(),
+                "calories": calories,
+                "protein_g": protein_g,
+            }
+            for log_date, calories, protein_g in nutrition_rows
+        ],
+        "weight_by_date": [
+            {
+                "date": log_date.isoformat(),
+                "weight_lbs": round(weight_lbs, 2) if weight_lbs else 0,
+            }
+            for log_date, weight_lbs in weight_rows
+        ],
+    }
