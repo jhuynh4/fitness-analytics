@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .core.database import Base, engine
 from .models import user, run, nutrition, weight
 from .api.test_db import router as test_db_router
@@ -11,6 +12,13 @@ from .api.weight import router as weight_router
 from .api.analytics import router as analytics_router
 
 app = FastAPI(title="Fitness Analytics API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #create all tables that inherit from Base
 Base.metadata.create_all(bind=engine)
